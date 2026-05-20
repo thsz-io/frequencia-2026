@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA RECOVERY // v20.26</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #0b0c10;
+            --terminal-green: #1fec70;
+            --trench-yellow: #fce300;
+            --blurry-red: #ec1c24;
+            --text-color: #c5c6c7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Fira Code', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .terminal {
+            width: 100%;
+            max-width: 500px;
+            height: 80vh;
+            background-color: rgba(20, 22, 26, 0.95);
+            border: 2px solid #1f2833;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .terminal-header {
+            background-color: #1f2833;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .btn.red { background-color: var(--blurry-red); }
+        .btn.yellow { background-color: var(--trench-yellow); }
+        .btn.green { background-color: var(--terminal-green); }
+
+        .terminal-title {
+            margin-left: 15px;
+            font-size: 0.8rem;
+            color: #66fcf1;
+            font-weight: bold;
+        }
+
+        .terminal-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .code-line {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .system-prefix {
+            color: var(--terminal-green);
+            font-weight: bold;
+        }
+
+        .highlight-yellow {
+            color: var(--trench-yellow);
+            font-weight: bold;
+        }
+
+        .highlight-red {
+            color: var(--blurry-red);
+            font-weight: bold;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #1f2833;
+            height: 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+            border: 1px solid #45f3ff;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--terminal-green);
+            box-shadow: 0 0 10px var(--terminal-green);
+            transition: width 1s linear;
+        }
+
+        .terminal-controls {
+            padding: 15px;
+            background-color: rgba(28, 30, 36, 0.9);
+            border-top: 1px solid #1f2833;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        .nav-btn {
+            background-color: transparent;
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--terminal-green);
+            color: var(--bg-color);
+            box-shadow: 0 0 10px var(--terminal-green);
+        }
+
+        .nav-btn:disabled {
+            border-color: #454545;
+            color: #454545;
+            cursor: not-allowed;
+            background-color: transparent;
+            box-shadow: none;
+        }
+
+        .slide-counter {
+            font-size: 0.8rem;
+            color: #45a29e;
+        }
+
+        /* Custom layout for final messages */
+        .heart-icon {
+            color: var(--blurry-red);
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 15px;
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="buttons">
+                <div class="btn red"></div>
+                <div class="btn yellow"></div>
+                <div class="btn green"></div>
+            </div>
+            <div class="terminal-title">ST@TH_CORE://SPACE_TIME_INTERFACE</div>
+        </div>
+
+        <div class="terminal-body" id="terminal-content">
+            
+            <!-- SLIDE 1: BOOT -->
+            <div class="slide active">
+                <p class="code-line"><span class="system-prefix">[SYS_INIT]:</span> Inicializando varredura de rede...</p>
+                <p class="code-line"><span class="system-prefix">[SYS_INIT]:</span> Conectando ao terminal de destino...</p>
+                <p class="code-line"><span class="system-prefix">[SYS_INIT]:</span> Localizando coordenadas de espaço-tempo.</p>
+                <button class="nav-btn" style="margin-top: 20px; width: 100%;" onclick="startLoading()">CONECTAR FREQUÊNCIA</button>
+            </div>
+
+            <!-- SLIDE 2: LOADING -->
+            <div class="slide">
+                <p class="code-line"><span class="system-prefix">[LOADING]:</span> Descriptografando pacotes de dados...</p>
+                <div class="progress-container">
+                    <div class="progress-bar" id="boot-progress"></div>
+                </div>
+                <p class="code-line" id="loading-status" style="font-size: 0.85rem; color: #45a29e;">Aguardando resposta do servidor...</p>
+            </div>
+
+            <!-- SLIDE 3: INTRO DE TI -->
+            <div class="slide">
+                <p class="code-line"><span class="system-prefix">[STATUS]:</span> <span class="highlight-yellow">CONEXÃO ESTABELECIDA.</span></p>
+                <p class="code-line">O multiverso andou meio instável ultimamente, e a nossa linha de comunicação principal acabou acumulando muita estática no sistema.</p>
+                <p class="code-line">Como programadora, eu sei que quando um código dá um erro crítico, a pior escolha é tentar forçar o sistema a rodar cheio de bugs...</p>
+            </div>
+
+            <!-- SLIDE 4: ESPAÇO E TEMPO -->
+            <div class="slide">
+                <p class="code-line">Às vezes, a única saída lógica de engenharia é pausar a execução, limpar o cache e recalibrar os servidores.</p>
+                <p class="code-line">O <span class="highlight-yellow">tempo</span> e o <span class="highlight-yellow">espaço</span> que você me deu não foram um vazio ou uma ausência. Eles foram o ambiente seguro que o meu sistema precisava para se reorganizar.</p>
+            </div>
+
+            <!-- SLIDE 5: GRATIDÃO -->
+            <div class="slide">
+                <p class="code-line">Quero te agradecer de forma muito real por isso.</p>
+                <p class="code-line">Obrigada por entender que o meu silêncio não significava que eu tinha desconectado de você, mas sim que eu estava limpando o ruído para conseguir te escutar com clareza de novo.</p>
+            </div>
+
+            <!-- SLIDE 6: ROBOT VOICES -->
+            <div class="slide">
+                <p class="code-line"><span class="system-prefix">[AUDIO_TRACK]:</span> Sintonizando frequência dedicada...</p>
+                <p class="code-line" style="font-style: italic; color: #45a29e; margin: 10px 0; border-left: 2px solid var(--trench-yellow); padding-left: 10px;">
+                    "I don't wanna hear the robot voices<br>
+                    I just wanna hear your voice..."
+                </p>
+                <p class="code-line">No meio de tantas vozes artificiais, ruídos externos e confusões que parecem programadas para nos afastar, a sua voz ainda é o único sinal analógico e real que faz sentido para mim.</p>
+            </div>
+
+            <!-- SLIDE 7: MARVEL / DEADPOOL -->
+            <div class="slide">
+                <p class="code-line"><span class="system-prefix">[SYSTEM_ALERT]:</span> Alerta de quebra da quarta parede detectado.</p>
+                <p class="code-line">Nem o Deadpool com o controle temporal do Cable conseguiria consertar as coisas no soco, e nem o Peter Parker consegue salvar todo mundo sem dar uma pausa para respirar longe da máscara.</p>
+                <p class="code-line">Obrigada por respeitar o meu tempo de tirar a máscara e processar os meus próprios 'bugs'.</p>
+            </div>
+
+            <!-- SLIDE 8: POKÉMON -->
+            <div class="slide">
+                <p class="code-line">Você sabe que no mundo dos jogos, os itens mais valiosos e os Pokémon Lendários não aparecem em qualquer grama alta na primeira rota do mapa. Eles exigem paciência, tempo e dedicação para serem encontrados e mantidos.</p>
+                <p class="code-line">Para o meu sistema, você é exatamente isso: um <span class="highlight-yellow">item raro e único</span>.</p>
+            </div>
+
+            <!-- SLIDE 9: CORINTHIANS -->
+            <div class="slide">
+                <p class="code-line">E se tem uma coisa que a gente entende bem, é sobre persistir e apoiar mesmo quando a fase está difícil e o cenário parece confuso.</p>
+                <p class="code-line">Ser fiel e estar lá faz parte da nossa estrutura. Na saúde, na doença, nos momentos de bug ou quando o placar não está ao nosso favor. É o sentimento do Timão aplicado na nossa própria história.</p>
+            </div>
+
+            <!-- SLIDE 10: ANIVERSÁRIO -->
+            <div class="slide">
+                <p class="code-line"><span class="system-prefix">[DATE_CHECK]:</span> Maio de 2026 // Evento: Seu Aniversário.</p>
+                <p class="code-line">Hoje o sistema não está aqui para dar respostas definitivas para o futuro, mas sim para celebrar a sua vida e a sua presença na minha.</p>
+                <p class="code-line">Parabéns pelo seu dia! Que o seu novo ciclo tenha menos telas travadas e muito mais linhas de código bem-sucedidas.</p>
+            </div>
+
+            <!-- SLIDE 11: FINAL CODES -->
+            <div class="slide">
+                <p class="code-line"><span class="system-prefix">[COMPILING]:</span> Gravando dados na memória permanente...</p>
+                <p class="code-line">`status = "Muito grata por você existir";`</p>
+                <p class="code-line">`frequência = "Sintonizada em você";`</p>
+                <p class="code-line" style="margin-top: 15px; font-weight: bold; text-align: center; color: var(--trench-yellow);">Fim da transmissão. Obrigada por ser meu espaço seguro.</p>
+                <div class="heart-icon">♥</div>
+            </div>
+
+        </div>
+
+        <div class="terminal-controls">
+            <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)" disabled>Anterior</button>
+            <span class="slide-counter" id="counter">1 / 11</span>
+            <button class="nav-btn" id="next-btn" onclick="changeSlide(1)" disabled>Avançar</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const counter = document.getElementById('counter');
+        const progressBar = document.getElementById('boot-progress');
+        const statusText = document.getElementById('loading-status');
+
+        const statuses = [
+            "Conectando aos servidores do T.O.P...",
+            "Contornando instabilidades do multiverso...",
+            "Alinhando dados de espaço e tempo...",
+            "Autenticando usuário favoritor...",
+            "Sinal limpo. Pronto para exibição."
+        ];
+
+        function startLoading() {
+            changeSlide(1); // Vai para o slide de loading
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            
+            let progress = 0;
+            let statusIndex = 0;
+
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = progress + '%';
+
+                if (progress % 20 === 0 && statusIndex < statuses.length) {
+                    statusText.innerText = statuses[statusIndex];
+                    statusIndex++;
+                }
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        nextBtn.disabled = false;
+                        changeSlide(1); // Avança automaticamente para o slide 3
+                    }, 600);
+                }
+            }, 400);
+        }
+
+        function changeSlide(direction) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide += direction;
+            slides[currentSlide].classList.add('active');
+
+            // Atualiza o contador de páginas visíveis
+            // Como os slides 1 e 2 são a introdução/loading, começamos a contar como página 1 a partir do slide real de conteúdo (index 2)
+            if (currentSlide <= 1) {
+                counter.innerText = "SYS // INIT";
+                prevBtn.disabled = true;
+                if (currentSlide === 0) nextBtn.disabled = true;
+            } else {
+                let displayPage = currentSlide - 1;
+                counter.innerText = `${displayPage} / 9`;
+                prevBtn.disabled = false;
+                nextBtn.disabled = false;
+            }
+
+            // Se chegar no último slide (Slide 11 / Index 10)
+            if (currentSlide === slides.length - 1) {
+                nextBtn.style.display = 'none'; // Esconde completamente o botão avançar
+                prevBtn.disabled = true; // Desabilita o voltar para ele ficar fixo ali
+                counter.innerText = "CORE // MEMORY";
+            }
+        }
+    </script>
+</body>
+</html>
